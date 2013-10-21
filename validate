@@ -1,0 +1,74 @@
+/**
+*
+*input textarea绑定
+*
+*dom.Input({fnValidate:function(v){每次操作返回V值，做操作}});
+*
+*
+*
+*/
+(function($){
+	var UA = navigator.userAgent,
+            isIE = UA.indexOf('MSIE') > -1,
+			v = isIE ? /\d+/.exec(UA.split(';')[1]) : 'no ie';
+			
+	var Input = function(el, options){
+		this.el = el;
+		this.options = options;
+		this.addEvents();
+	}
+	
+	Input.prototype = {
+		addEvents : function(){
+			var ip = this;
+			
+			if(!isIE){
+				$(this.el)[0].addEventListener("input", function(){
+					$.isFunction(ip.options.fnValidate) && (ip.options.fnValidate(this.value));
+				});
+			} else {
+				if(!!window.attachEvent && v > 8){
+					$(this.el)[0].attachEvent("onkeyup",function(){
+						var key = window.event.keyCode;
+						var _v = $(ip.el).val();
+						$.isFunction(ip.options.fnValidate) && (ip.options.fnValidate(_v));
+					});
+		 
+					$(this.el)[0].attachEvent("oncut", function(e){
+						if(document.all)
+						{ 
+						  var content = document.selection.createRange(); 
+						}
+						else
+						{ 
+						  var  content = window.getSelection(); 
+						  content.text = content.toString(); 
+						} 
+						
+						var text = content.text;
+						var value = $(ip.el).val();
+						if(!value)	return;
+						var jianqie;
+						jianqie = value.replace(text, "");
+						
+						$.isFunction(ip.options.fnValidate) && (ip.options.fnValidate(jianqie));
+					});
+				}
+			}
+		}
+	}
+	
+	$.fn.Input = function(options){
+		return this.each(function(){
+			var $this = $(this),
+				data = $this.data('input');
+			
+			if(!data){
+				data = $this.data('input', (data = new Input(this, options)));
+			}
+			
+			return this;
+		});
+			
+	}
+})(window.jQuery);
